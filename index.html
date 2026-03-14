@@ -1,27 +1,51 @@
+
 <!DOCTYPE html>
 <html>
 
 <head>
-<title>ChulaWeb</title>
+<title>CWChat</title>
 
 <style>
 
 body{
-font-family: Arial;
-background:#ece5dd;
+font-family:Arial;
 margin:0;
+background:#ece5dd;
 display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
 }
 
+#welcome{
+text-align:center;
+background:white;
+padding:40px;
+border-radius:10px;
+box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+
+#welcome input{
+padding:10px;
+margin-top:15px;
+width:200px;
+border:1px solid #ccc;
+}
+
+#welcome button{
+margin-top:15px;
+padding:10px 20px;
+background:#25d366;
+border:none;
+cursor:pointer;
+}
+
 .chat-container{
 width:360px;
-height:520px;
+height:540px;
 background:white;
 border-radius:12px;
-display:flex;
+display:none;
 flex-direction:column;
 box-shadow:0 8px 25px rgba(0,0,0,0.2);
 }
@@ -30,7 +54,6 @@ box-shadow:0 8px 25px rgba(0,0,0,0.2);
 background:#075e54;
 color:white;
 padding:15px;
-font-size:18px;
 font-weight:bold;
 }
 
@@ -38,19 +61,42 @@ font-weight:bold;
 flex:1;
 padding:10px;
 overflow-y:auto;
+display:flex;
+flex-direction:column;
 }
 
 .message{
-background:#dcf8c6;
 padding:8px 12px;
-border-radius:8px;
-margin:6px 0;
-max-width:75%;
+border-radius:10px;
+margin:5px 0;
+max-width:70%;
+font-size:14px;
+}
+
+.sent{
+background:#dcf8c6;
+align-self:flex-end;
+}
+
+.received{
+background:#f1f0f0;
+align-self:flex-start;
+}
+
+.username{
+font-size:11px;
+opacity:0.6;
+}
+
+.time{
+font-size:10px;
+opacity:0.5;
+margin-top:2px;
 }
 
 .input-area{
 display:flex;
-border-top:1px solid #ddd;
+border-top:1px solid #ccc;
 }
 
 input{
@@ -58,7 +104,6 @@ flex:1;
 padding:12px;
 border:none;
 outline:none;
-font-size:14px;
 }
 
 button{
@@ -66,7 +111,6 @@ background:#25d366;
 border:none;
 padding:0 18px;
 cursor:pointer;
-font-weight:bold;
 }
 
 </style>
@@ -75,61 +119,138 @@ font-weight:bold;
 
 <body>
 
-<div class="chat-container">
+<div id="welcome">
+
+<h2>Welcome to CWChat ❤️</h2>
+
+<p>Enter your username</p>
+
+<input id="usernameInput">
+
+<br>
+
+<button onclick="startChat()">Enter Chat</button>
+
+</div>
+
+
+<div class="chat-container" id="chat">
 
 <div class="header">
-ChulaWeb ❤️
+CWChat
 </div>
 
 <div class="messages" id="messages"></div>
 
 <div class="input-area">
-<input id="messageInput" placeholder="Type a message">
+
+<input id="messageInput" placeholder="Type message">
+
 <button onclick="sendMessage()">Send</button>
+
 </div>
 
 </div>
+
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
 
-var firebaseConfig = {
-apiKey: "PASTE_YOUR_API_KEY_HERE",
-authDomain: "chulaweb.firebaseapp.com",
-databaseURL: "https://chulaweb-809f3-default-rtdb.firebaseio.com/",
-projectId: "chulaweb",
+var username="";
+
+var firebaseConfig={
+apiKey:"AIzaSyDbvD8egjdVofuwFmipp3-wCN0BTTiM1jA",
+authDomain:"chulaweb-809f3.firebaseapp.com",
+databaseURL:"https://chulaweb-809f3-default-rtdb.firebaseio.com",
+projectId:"chulaweb-809f3",
+storageBucket:"chulaweb-809f3.firebasestorage.app",
+messagingSenderId:"85888487182",
+appId:"1:85888487182:web:ff635d7748c8c9f9c3d15f"
 };
 
 firebase.initializeApp(firebaseConfig);
 
-var db = firebase.database().ref("messages");
+var db=firebase.database().ref("messages");
+
+
+function startChat(){
+
+username=document.getElementById("usernameInput").value;
+
+if(username==="") return;
+
+document.getElementById("welcome").style.display="none";
+document.getElementById("chat").style.display="flex";
+
+}
+
 
 function sendMessage(){
 
-var input = document.getElementById("messageInput");
+var input=document.getElementById("messageInput");
 
-if(input.value.trim() === "") return;
+if(input.value.trim()==="") return;
 
 db.push({
-text: input.value
+
+user:username,
+text:input.value,
+time:new Date().toLocaleTimeString()
+
 });
 
 input.value="";
+
 }
 
-db.on("child_added", function(data){
 
-var msg = document.createElement("div");
+db.on("child_added",function(data){
 
+var msg=document.createElement("div");
 msg.className="message";
 
-msg.innerText=data.val().text;
+if(data.val().user===username){
+msg.classList.add("sent");
+}else{
+msg.classList.add("received");
+}
+
+var name=document.createElement("div");
+name.className="username";
+name.innerText=data.val().user;
+
+var text=document.createElement("div");
+text.innerText=data.val().text;
+
+var time=document.createElement("div");
+time.className="time";
+time.innerText=data.val().time;
+
+msg.appendChild(name);
+msg.appendChild(text);
+msg.appendChild(time);
 
 document.getElementById("messages").appendChild(msg);
 
+document.getElementById("messages").scrollTop=document.getElementById("messages").scrollHeight;
+
+
+if(Notification.permission==="granted" && data.val().user!==username){
+
+new Notification(data.val().user+" says:",{
+body:data.val().text
 });
+
+}
+
+});
+
+
+if(Notification.permission!=="granted"){
+Notification.requestPermission();
+}
 
 </script>
 
