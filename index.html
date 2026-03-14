@@ -1,40 +1,41 @@
-<!DOCTYPE html>
-<html>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-<head>
-<title>ChulaWeb</title>
+<script>
 
-<style>
+var firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "chulaweb.firebaseapp.com",
+  databaseURL: "https://chulaweb-809f3-default-rtdb.firebaseio.com/",
+  projectId: "chulaweb"
+};
 
-body{
-font-family: Arial;
-background:#ece5dd;
-margin:0;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
+firebase.initializeApp(firebaseConfig);
+
+var db = firebase.database().ref("messages");
+
+function sendMessage(){
+
+var input = document.getElementById("messageInput");
+var message = input.value;
+
+db.push({
+text: message
+});
+
+input.value="";
 }
 
-.chat-container{
-width:350px;
-height:500px;
-background:white;
-border-radius:10px;
-display:flex;
-flex-direction:column;
-box-shadow:0 5px 20px rgba(0,0,0,0.2);
-}
+db.on("child_added", function(data){
 
-.header{
-background:#075e54;
-color:white;
-padding:15px;
-font-weight:bold;
-}
+var msgBox = document.createElement("div");
+msgBox.innerText = data.val().text;
 
-.messages{
-flex:1;
+document.getElementById("messages").appendChild(msgBox);
+
+});
+
+</script>flex:1;
 padding:10px;
 overflow-y:auto;
 }
